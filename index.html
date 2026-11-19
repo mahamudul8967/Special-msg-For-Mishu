@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mahamudul Hasan's Proposal for Mishu 💐🏀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(160deg, #2d142c 0%, #511845 45%, #900c3f 85%, #c70039 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .font-romantic {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        .font-serif-elegant {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Responsive Arcade Game Frame */
+        .game-shell {
+            position: relative;
+            width: 100%;
+            height: 100dvh;
+            max-width: 560px;
+            max-height: 860px;
+            background: linear-gradient(180deg, #fff1f5 0%, #ffe4ec 58%, #fbcfe8 100%);
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 600px) {
+            .game-shell {
+                height: 92dvh;
+                border-radius: 30px;
+            }
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        #game-canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Proposal Modal Backdrop & Card */
+        .proposal-backdrop {
+            background: rgba(36, 8, 22, 0.52);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+
+        .proposal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .proposal-card {
+            transform: translateY(32px) scale(0.9);
+            opacity: 0;
+            transition: all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .proposal-backdrop.active .proposal-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+
+        /* Shimmer Button Effect */
+        .btn-shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 40%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            transform: rotate(25deg);
+            animation: shimmer 2.8s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -60%; }
+            40%, 100% { left: 135%; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="game-shell">
+        <!-- Top Arcade HUD Overlay -->
+        <header class="absolute top-0 left-0 right-0 z-20 px-4 pt-4 pb-2 flex items-center justify-between gap-2 pointer-events-none">
+            <!-- Title & Live Status Pill -->
+            <div class="bg-white/85 backdrop-blur-md border border-rose-200/80 rounded-2xl px-3.5 py-2 shadow-sm pointer-events-auto">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-sm">🏀</span>
+                    <h1 class="text-xs sm:text-sm font-extrabold text-slate-800 tracking-tight">
+                        Mahamudul Hasan's Bouquet
+                    </h1>
+                </div>
+                <p id="hud-feedback" class="text-[11px] font-medium text-rose-600 mt-0.5 transition-all">
+                    Pull back or swipe up to shoot! 💐
+                </p>
+            </div>
+
+            <!-- Scoreboard & Controls -->
+            <div class="flex items-center gap-1.5 pointer-events-auto">
+                <div class="bg-white/85 backdrop-blur-md border border-rose-200/80 rounded-2xl px-3 py-1.5 text-center shadow-sm">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Shots</div>
+                    <div id="hud-shots" class="text-xs sm:text-sm font-extrabold text-slate-800">0</div>
+                </div>
+
+                <div class="bg-white/85 backdrop-blur-md border border-rose-200/80 rounded-2xl px-3 py-1.5 text-center shadow-sm">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-rose-400">Goals</div>
+                    <div id="hud-goals" class="text-xs sm:text-sm font-extrabold text-rose-600">0</div>
+                </div>
+
+                <button id="sound-btn" type="button" aria-label="Toggle Sound"
+                    class="w-9 h-9 rounded-2xl bg-white/85 hover:bg-white backdrop-blur-md border border-rose-200/80 flex items-center justify-center text-sm shadow-sm active:scale-90 transition cursor-pointer">
+                    <span id="sound-icon">🔊</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Moving Hoop Challenge Toggle Badge (Appears after 1st Goal) -->
+        <div id="challenge-bar" class="hidden absolute top-20 left-1/2 -translate-x-1/2 z-20">
+            <button id="sway-toggle-btn" type="button"
+                class="px-3 py-1 rounded-full bg-rose-600/90 text-white text-[11px] font-bold shadow-md backdrop-blur-xs flex items-center gap-1.5 cursor-pointer active:scale-95 transition">
+                <span>🔥 Pro Mode: Moving Hoop ON</span>
+            </button>
+        </div>
+
+        <!-- Full-Height Interactive 60fps Physics Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Romantic Proposal Reveal Modal -->
+        <div id="proposal-modal" class="proposal-backdrop absolute inset-0 z-30 flex items-center justify-center p-4 sm:p-6">
+            <div class="proposal-card bg-white/95 backdrop-blur-xl w-full max-w-md rounded-3xl p-6 sm:p-8 text-center shadow-2xl border border-rose-200 relative overflow-hidden">
+                <!-- Decorative Aura -->
+                <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-72 h-36 bg-rose-400/25 blur-2xl pointer-events-none"></div>
+
+                <!-- Step 1: The Proposal Question -->
+                <div id="proposal-step-1">
+                    <div class="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 border border-rose-200 flex items-center justify-center text-3xl shadow-sm mb-3 animate-bounce">
+                        💐💍
+                    </div>
+
+                    <span class="inline-block px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-[11px] font-extrabold uppercase tracking-wider mb-2 border border-rose-200/70">
+                        Swish! A Special Message for Mishu
+                    </span>
+
+                    <h2 class="font-romantic text-4xl sm:text-5xl text-rose-600 leading-tight mb-1">
+                        I Love You Mishu,
+                    </h2>
+                    <p class="font-serif-elegant text-2xl sm:text-3xl font-bold text-slate-800 leading-snug mb-3">
+                        will you be my wife?
+                    </p>
+
+                    <p class="font-serif-elegant italic text-xs sm:text-sm text-rose-500 mb-3">
+                        "Mishu, every shot in my life led me straight to you."
+                    </p>
+
+                    <p class="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6 px-1">
+                        Dearest Mishu, you just scored the winning point of Mahamudul Hasan's heart. Walk beside me forever as my best friend, my partner, and my wife.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                        <button id="yes-btn-primary" type="button"
+                            class="btn-shimmer w-full sm:w-auto flex-1 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/30 active:scale-95 transition-all cursor-pointer">
+                            Yes! 💍
+                        </button>
+                        <button id="yes-btn-secondary" type="button"
+                            class="btn-shimmer w-full sm:w-auto flex-1 py-3.5 px-5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-extrabold text-sm active:scale-95 transition-all cursor-pointer">
+                            Yes, a thousand times! 💖
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Celebration Confirmation View -->
+                <div id="proposal-step-2" class="hidden">
+                    <div class="mx-auto w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center text-4xl shadow-lg shadow-rose-500/30 mb-4">
+                        💍🥂
+                    </div>
+
+                    <h2 class="font-romantic text-4xl sm:text-5xl text-rose-600 mb-1">
+                        Mishu Said Yes!
+                    </h2>
+                    <h3 class="font-serif-elegant text-xl sm:text-2xl font-bold text-slate-800 mb-3">
+                        Mahamudul Hasan & Mishu ❤️
+                    </h3>
+
+                    <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-6 bg-rose-50/80 p-4 rounded-2xl border border-rose-100">
+                        Mishu, you just made Mahamudul Hasan the luckiest person in the world! Here's to a lifetime of love, laughter, and endless adventures together. 🌹✨
+                    </p>
+
+                    <button id="play-again-btn" type="button"
+                        class="py-3 px-6 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold shadow-md active:scale-95 transition-all cursor-pointer inline-flex items-center gap-2">
+                        <span>🏀</span>
+                        <span>Play Again (Faster Moving Hoop)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Court Position Controller (Move Left / Right like real arcade basketball) -->
+        <div id="court-controls" class="absolute bottom-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-auto">
+            <button id="move-left-btn" type="button" aria-label="Move Bouquet Left"
+                class="w-12 h-11 rounded-2xl bg-white/90 hover:bg-white active:scale-90 backdrop-blur-md border border-rose-200 shadow-md flex items-center justify-center text-rose-600 font-extrabold text-lg transition cursor-pointer">
+                ◀
+            </button>
+
+            <div id="position-track" class="flex-1 h-11 rounded-2xl bg-white/80 backdrop-blur-md border border-rose-200/90 shadow-inner relative flex items-center justify-center px-3 cursor-ew-resize touch-none">
+                <div class="w-full h-1.5 bg-rose-200/80 rounded-full relative overflow-hidden">
+                    <div id="position-indicator" class="absolute top-0 bottom-0 w-8 -ml-4 bg-rose-500 rounded-full transition-all duration-75" style="left: 50%;"></div>
+                </div>
+                <span class="absolute text-[10px] font-bold text-rose-700/80 tracking-wide pointer-events-none select-none">
+                    ◀ Slide or Tap to Move Left / Right ▶
+                </span>
+            </div>
+
+            <button id="move-right-btn" type="button" aria-label="Move Bouquet Right"
+                class="w-12 h-11 rounded-2xl bg-white/90 hover:bg-white active:scale-90 backdrop-blur-md border border-rose-200 shadow-md flex items-center justify-center text-rose-600 font-extrabold text-lg transition cursor-pointer">
+                ▶
+            </button>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Arcade Romantic Basketball Physics Engine
+         * - Left/Right Court Positioning (Touch Slider, Buttons, Keyboard Arrows, or Horizontal Drag)
+         * - Continuous Real-Arcade Moving Hoop with Speed Toggle
+         * - Authentic Slingshot & Swipe-to-Shoot aiming controls
+         * - 2D Rigid-Body Circle vs Segment/Circle Collisions (Backboard, Left Rim, Right Rim, Court Floor)
+         * - Dynamic Spring-Mass Woven Basketball Net Physics
+         * - Slow-motion Swish Impact & Heart/Petal Confetti Celebration
+         */
+        (() => {
+            const canvas = document.getElementById('game-canvas');
+            const ctx = canvas.getContext('2d');
+
+            const hudFeedback = document.getElementById('hud-feedback');
+            const hudShots = document.getElementById('hud-shots');
+            const hudGoals = document.getElementById('hud-goals');
+            const soundBtn = document.getElementById('sound-btn');
+            const soundIcon = document.getElementById('sound-icon');
+            const challengeBar = document.getElementById('challenge-bar');
+            const swayToggleBtn = document.getElementById('sway-toggle-btn');
+
+            const moveLeftBtn = document.getElementById('move-left-btn');
+            const moveRightBtn = document.getElementById('move-right-btn');
+            const positionTrack = document.getElementById('position-track');
+            const positionIndicator = document.getElementById('position-indicator');
+
+            const proposalModal = document.getElementById('proposal-modal');
+            const proposalStep1 = document.getElementById('proposal-step-1');
+            const proposalStep2 = document.getElementById('proposal-step-2');
+            const yesBtnPrimary = document.getElementById('yes-btn-primary');
+            const yesBtnSecondary = document.getElementById('yes-btn-secondary');
+            const playAgainBtn = document.getElementById('play-again-btn');
+
+            // --- Web Audio API Synthesizer ---
+            let soundEnabled = true;
+            let audioCtx = null;
+
+            function ensureAudio() {
+                if (!audioCtx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) audioCtx = new AudioCtx();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playSynth(freq, type, duration, delay = 0, vol = 0.12) {
+                if (!soundEnabled) return;
+                try {
+                    ensureAudio();
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+                    gain.gain.setValueAtTime(0.001, audioCtx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(vol, audioCtx.currentTime + delay + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + delay + duration);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + delay);
+                    osc.stop(audioCtx.currentTime + delay + duration + 0.04);
+                } catch (_) {}
+            }
+
+            function sfxThrow() {
+                playSynth(240, 'sine', 0.22, 0, 0.1);
+                playSynth(390, 'triangle', 0.25, 0.04, 0.07);
+            }
+
+            function sfxRimClank(intensity = 1) {
+                const v = Math.min(0.22, 0.06 + intensity * 0.015);
+                playSynth(185, 'triangle', 0.14, 0, v);
+                playSynth(115, 'sine', 0.18, 0.02, v * 0.9);
+            }
+
+            function sfxBackboardThud(intensity = 1) {
+                const v = Math.min(0.2, 0.05 + intensity * 0.012);
+                playSynth(130, 'sine', 0.14, 0, v);
+            }
+
+            function sfxFloorBounce(intensity = 1) {
+                const v = Math.min(0.14, 0.03 + intensity * 0.01);
+                playSynth(95, 'sine', 0.12, 0, v);
+            }
+
+            function sfxSwishChime() {
+                // Net swish noise + romantic ascending arpeggio
+                const notes = [523.25, 659.25, 783.99, 987.77, 1174.66, 1567.98];
+                notes.forEach((n, i) => {
+                    playSynth(n, 'sine', 0.95, i * 0.08, 0.12);
+                    playSynth(n * 1.5, 'triangle', 0.65, i * 0.08 + 0.02, 0.045);
+                });
+            }
+
+            function sfxFanfare() {
+                const chord = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+                chord.forEach((n, i) => playSynth(n, 'sine', 1.3, i * 0.06, 0.13));
+            }
+
+            soundBtn.addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+                if (soundEnabled) playSynth(660, 'sine', 0.18, 0, 0.08);
+            });
+
+            // --- Game State & Physics Constants ---
+            const GRAVITY = 0.56;
+            const AIR_DRAG = 0.996;
+            const BOUQUET_RADIUS = 23; // Effective physical collision radius of bouquet core
+            const RIM_NODE_RADIUS = 5.5;
+
+            const game = {
+                width: 0,
+                height: 0,
+                floorY: 0,
+                shots: 0,
+                goals: 0,
+                movingHoop: true,
+                hoopSpeed: 0.022,
+                hoopPhase: 0,
+                timeScale: 1.0, // Slow-motion celebratory effect on score
+                moveDir: 0, // -1 left, 0 idle, 1 right (from buttons or arrow keys)
+
+                // Hoop Geometry (updated each frame)
+                hoop: {
+                    baseX: 0,
+                    x: 0,
+                    y: 0,
+                    rimHalfWidth: 44, // 88px inner diameter vs 46px bouquet diameter -> fair, skill-based!
+                    boardWidth: 156,
+                    boardHeight: 112,
+                    boardBottomOffset: 16,
+                    // Spring-mass net simulation
+                    netStretch: 0,
+                    netVel: 0,
+                    netSway: 0,
+                    glowAlpha: 0
+                },
+
+                // Bouquet Projectile State
+                ball: {
+                    homeX: 0,
+                    homeY: 0,
+                    x: 0,
+                    y: 0,
+                    prevX: 0,
+                    prevY: 0,
+                    vx: 0,
+                    vy: 0,
+                    angle: 0,
+                    vAngle: 0,
+                    state: 'ready', // 'ready' | 'aiming' | 'flying' | 'scored' | 'missed_rolling'
+                    hitRimOrBoard: false,
+                    maxHeightReached: 9999,
+                    resetTimer: 0
+                },
+
+                // Pointer Aiming State (Supports both Slingshot Pull-Back & Forward Flick)
+                aim: {
+                    active: false,
+                    startX: 0,
+                    startY: 0,
+                    currX: 0,
+                    currY: 0,
+                    launchVx: 0,
+                    launchVy: 0,
+                    powerRatio: 0,
+                    pointerHistory: []
+                },
+
+                // Visual Effects
+                trail: [],
+                particles: [],
+                floatingTexts: [],
+                ambientHearts: []
+            };
+
+            // Initialize ambient background hearts
+            for (let i = 0; i < 16; i++) {
+                game.ambientHearts.push({
+                    x: Math.random(),
+                    y: Math.random(),
+                    size: 10 + Math.random() * 14,
+                    speed: 0.0004 + Math.random() * 0.0006,
+                    alpha: 0.08 + Math.random() * 0.12,
+                    wobble: Math.random() * Math.PI * 2
+                });
+            }
+
+            // --- Resize & Court Layout ---
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                game.width = rect.width;
+                game.height = rect.height;
+
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = game.width * dpr;
+                canvas.height = game.height * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                // Court floor and Hoop coordinates (leave extra space at bottom for Left/Right court bar)
+                game.floorY = game.height - 68;
+                game.hoop.baseX = game.width * 0.5;
+                if (!game.movingHoop) {
+                    game.hoop.x = game.hoop.baseX;
+                }
+                game.hoop.y = Math.max(185, game.height * 0.27);
+
+                // Adjust rim width slightly on very narrow screens
+                game.hoop.rimHalfWidth = game.width < 360 ? 39 : 44;
+
+                const margin = 48;
+                if (!game.ball.homeX) {
+                    game.ball.homeX = game.width * 0.5;
+                } else {
+                    game.ball.homeX = Math.max(margin, Math.min(game.width - margin, game.ball.homeX));
+                }
+                game.ball.homeY = game.floorY - 62;
+
+                if (game.ball.state === 'ready') {
+                    resetBallToStart();
+                }
+            }
+
+            function setBouquetCourtX(newX) {
+                const margin = 48;
+                const clampedX = Math.max(margin, Math.min(game.width - margin, newX));
+                game.ball.homeX = clampedX;
+                if (game.ball.state === 'ready') {
+                    game.ball.x = clampedX;
+                    game.ball.prevX = clampedX;
+                }
+                // Update bottom slider indicator
+                const span = Math.max(1, game.width - margin * 2);
+                const pct = ((clampedX - margin) / span) * 100;
+                positionIndicator.style.left = `${Math.max(6, Math.min(94, pct))}%`;
+            }
+
+            function resetBallToStart() {
+                const b = game.ball;
+                b.state = 'ready';
+                b.x = b.homeX;
+                b.y = b.homeY;
+                b.prevX = b.homeX;
+                b.prevY = b.homeY;
+                b.vx = 0;
+                b.vy = 0;
+                b.angle = 0;
+                b.vAngle = 0;
+                b.hitRimOrBoard = false;
+                b.resetTimer = 0;
+                game.aim.active = false;
+                game.aim.isSlidingCourt = false;
+                game.aim.launchVx = 0;
+                game.aim.launchVy = 0;
+                game.aim.powerRatio = 0;
+                game.trail = [];
+            }
+
+            function setFeedback(message, colorClass = 'text-rose-600') {
+                hudFeedback.textContent = message;
+                hudFeedback.className = `text-[11px] font-medium ${colorClass} mt-0.5 transition-all`;
+            }
+
+            function spawnFloatingCallout(x, y, text, color = '#e11d48') {
+                game.floatingTexts.push({
+                    x,
+                    y,
+                    text,
+                    color,
+                    vy: -1.15,
+                    life: 52,
+                    alpha: 1
+                });
+            }
+
+            // --- Unified Slingshot, Horizontal Court Slide & Swipe Aiming Input ---
+            function getPointerPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const pt = e.touches ? e.touches[0] : e;
+                return {
+                    x: pt.clientX - rect.left,
+                    y: pt.clientY - rect.top
+                };
+            }
+
+            function computeLaunchVelocityFromAim() {
+                const a = game.aim;
+                const dx = a.currX - a.startX;
+                const dy = a.currY - a.startY;
+
+                // Support BOTH intuitive controls:
+                // 1) Slingshot Pull-Back (dragging downward pulls the elastic band back to shoot up)
+                // 2) Upward Swipe/Drag (swiping upward toward the hoop throws in swipe direction)
+                let rawVx = 0;
+                let rawVy = 0;
+
+                if (dy > 14) {
+                    // Slingshot Pull-Back mode (pull down-left to shoot up-right!)
+                    const pullDist = Math.hypot(dx, dy);
+                    const clampedDist = Math.min(pullDist, 190);
+                    const scale = clampedDist / (pullDist || 1);
+                    rawVx = -dx * scale * 0.115;
+                    rawVy = -dy * scale * 0.145;
+                } else if (dy < -14) {
+                    // Forward Swipe / Drag Upward mode
+                    const swipeDist = Math.hypot(dx, dy);
+                    const clampedDist = Math.min(swipeDist, 220);
+                    const scale = clampedDist / (swipeDist || 1);
+                    rawVx = dx * scale * 0.095;
+                    rawVy = dy * scale * 0.125;
+                }
+
+                // Clamp velocities to realistic basketball range
+                a.launchVx = Math.max(-14, Math.min(14, rawVx));
+                a.launchVy = Math.max(-25.5, Math.min(0, rawVy));
+                a.powerRatio = Math.min(1, Math.abs(a.launchVy) / 24);
+            }
+
+            function onPointerDown(e) {
+                if (game.ball.state !== 'ready') return;
+                ensureAudio();
+
+                const pos = getPointerPos(e);
+                // Allow grabbing anywhere in the lower court area near the bouquet for smooth mobile ergonomics
+                const distToBall = Math.hypot(pos.x - game.ball.x, pos.y - game.ball.y);
+                if (distToBall > 155 && pos.y < game.height * 0.55) return;
+
+                game.ball.state = 'aiming';
+                game.aim.active = true;
+                game.aim.startX = pos.x;
+                game.aim.startY = pos.y;
+                game.aim.currX = pos.x;
+                game.aim.currY = pos.y;
+                game.aim.startHomeX = game.ball.homeX;
+                game.aim.isSlidingCourt = false;
+                game.aim.launchVx = 0;
+                game.aim.launchVy = 0;
+                game.aim.powerRatio = 0;
+                game.aim.pointerHistory = [{ x: pos.x, y: pos.y, t: performance.now() }];
+
+                setFeedback('Drag Left/Right to position, or Up/Down to shoot! 🎯', 'text-amber-600');
+            }
+
+            function onPointerMove(e) {
+                if (!game.aim.active || game.ball.state !== 'aiming') return;
+                e.preventDefault();
+
+                const pos = getPointerPos(e);
+                game.aim.currX = pos.x;
+                game.aim.currY = pos.y;
+
+                game.aim.pointerHistory.push({ x: pos.x, y: pos.y, t: performance.now() });
+                if (game.aim.pointerHistory.length > 6) game.aim.pointerHistory.shift();
+
+                const dy = pos.y - game.aim.startY;
+                const dx = pos.x - game.aim.startX;
+
+                // If user drags mostly horizontally (dan-a bam-a), move the bouquet smoothly across the court!
+                if (Math.abs(dy) <= 22 && Math.abs(dx) > 4) {
+                    game.aim.isSlidingCourt = true;
+                    game.aim.launchVx = 0;
+                    game.aim.launchVy = 0;
+                    game.aim.powerRatio = 0;
+
+                    const margin = 48;
+                    const newHomeX = Math.max(margin, Math.min(game.width - margin, game.aim.startHomeX + dx));
+                    game.ball.homeX = newHomeX;
+                    game.ball.x = newHomeX;
+                    game.ball.y = game.ball.homeY;
+                    game.ball.angle = Math.max(-0.22, Math.min(0.22, dx * 0.002));
+
+                    const span = Math.max(1, game.width - margin * 2);
+                    const pct = ((newHomeX - margin) / span) * 100;
+                    positionIndicator.style.left = `${Math.max(6, Math.min(94, pct))}%`;
+                    setFeedback('Moving Left / Right... Pull down or swipe up to shoot! 💐', 'text-rose-600');
+                    return;
+                }
+
+                game.aim.isSlidingCourt = false;
+                computeLaunchVelocityFromAim();
+
+                // Subtle elastic pull visual offset on bouquet when aiming shot
+                if (dy > 0) {
+                    game.ball.x = game.ball.homeX + Math.max(-26, Math.min(26, dx * 0.22));
+                    game.ball.y = game.ball.homeY + Math.min(28, dy * 0.22);
+                    game.ball.angle = Math.max(-0.35, Math.min(0.35, -dx * 0.002));
+                } else {
+                    game.ball.x = game.ball.homeX + Math.max(-22, Math.min(22, dx * 0.18));
+                    game.ball.y = game.ball.homeY + Math.max(-22, dy * 0.18);
+                    game.ball.angle = Math.max(-0.35, Math.min(0.35, dx * 0.002));
+                }
+            }
+
+            function onPointerUp() {
+                if (!game.aim.active || game.ball.state !== 'aiming') return;
+                game.aim.active = false;
+
+                // If user was sliding the bouquet horizontally left/right, lock in its new court position!
+                if (game.aim.isSlidingCourt) {
+                    game.aim.isSlidingCourt = false;
+                    resetBallToStart();
+                    setFeedback('Position set! Now swipe up or pull down to shoot! 🏀', 'text-rose-600');
+                    return;
+                }
+
+                // Check if user did a fast flick swipe
+                const hist = game.aim.pointerHistory;
+                if (hist.length >= 2) {
+                    const last = hist[hist.length - 1];
+                    const first = hist[0];
+                    const dt = Math.max(16, last.t - first.t);
+                    const flickVy = ((last.y - first.y) / dt) * 16.67;
+                    const flickVx = ((last.x - first.x) / dt) * 16.67;
+
+                    // If quick upward flick is stronger than drag distance, boost naturally
+                    if (flickVy < -10 && (last.y - game.aim.startY) < -25) {
+                        game.aim.launchVx = Math.max(-13, Math.min(13, flickVx * 0.65));
+                        game.aim.launchVy = Math.max(-25, Math.min(-11, flickVy * 0.78));
+                    }
+                }
+
+                // Require a minimum upward launch velocity to throw
+                if (game.aim.launchVy < -6.5) {
+                    launchBouquet(game.aim.launchVx, game.aim.launchVy);
+                } else {
+                    // Cancel weak tap and return to ready
+                    resetBallToStart();
+                    setFeedback('Drag Left/Right to move, or swipe up harder to shoot! 💪', 'text-rose-600');
+                }
+            }
+
+            canvas.addEventListener('mousedown', onPointerDown);
+            window.addEventListener('mousemove', onPointerMove, { passive: false });
+            window.addEventListener('mouseup', onPointerUp);
+
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            window.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('touchend', onPointerUp);
+
+            // --- Left & Right Court Positioning Controls (Buttons, Slider Track & Arrow Keys) ---
+            function bindHoldButton(btn, dir) {
+                const start = (e) => {
+                    e.preventDefault();
+                    ensureAudio();
+                    if (game.ball.state === 'ready') {
+                        // Immediate crisp step on tap + continuous smooth slide while held
+                        setBouquetCourtX(game.ball.homeX + dir * 24);
+                    }
+                    game.moveDir = dir;
+                };
+                const stop = () => {
+                    if (game.moveDir === dir) game.moveDir = 0;
+                };
+                btn.addEventListener('mousedown', start);
+                btn.addEventListener('touchstart', start, { passive: false });
+                window.addEventListener('mouseup', stop);
+                window.addEventListener('touchend', stop);
+            }
+
+            bindHoldButton(moveLeftBtn, -1);
+            bindHoldButton(moveRightBtn, 1);
+
+            let trackDragging = false;
+            function updateTrackPosition(clientX) {
+                if (game.ball.state !== 'ready') return;
+                const rect = positionTrack.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                const margin = 48;
+                const targetX = margin + ratio * (game.width - margin * 2);
+                setBouquetCourtX(targetX);
+            }
+
+            positionTrack.addEventListener('mousedown', (e) => {
+                trackDragging = true;
+                updateTrackPosition(e.clientX);
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (trackDragging) updateTrackPosition(e.clientX);
+            });
+            window.addEventListener('mouseup', () => {
+                trackDragging = false;
+            });
+
+            positionTrack.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                trackDragging = true;
+                if (e.touches[0]) updateTrackPosition(e.touches[0].clientX);
+            }, { passive: false });
+            positionTrack.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (trackDragging && e.touches[0]) updateTrackPosition(e.touches[0].clientX);
+            }, { passive: false });
+            positionTrack.addEventListener('touchend', () => {
+                trackDragging = false;
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') game.moveDir = -1;
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') game.moveDir = 1;
+            });
+            window.addEventListener('keyup', (e) => {
+                if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && game.moveDir === -1) game.moveDir = 0;
+                if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && game.moveDir === 1) game.moveDir = 0;
+            });
+
+            // --- Launch Bouquet ---
+            function launchBouquet(vx, vy) {
+                const b = game.ball;
+                b.state = 'flying';
+                b.vx = vx;
+                b.vy = vy;
+                b.vAngle = (vx * 0.018) + (vx >= 0 ? 0.06 : -0.06);
+                b.hitRimOrBoard = false;
+                b.maxHeightReached = b.y;
+
+                game.shots += 1;
+                hudShots.textContent = game.shots;
+
+                sfxThrow();
+                setFeedback('Here it goes... 🌹✨', 'text-pink-600');
+            }
+
+            // --- Circle vs Circle Rigid Collision Helper (for Left & Right Rim Edges) ---
+            function resolveCircleCollision(ball, cx, cy, cr, restitution = 0.64) {
+                const dx = ball.x - cx;
+                const dy = ball.y - cy;
+                const dist = Math.hypot(dx, dy);
+                const minDist = BOUQUET_RADIUS + cr;
+
+                if (dist < minDist && dist > 0.0001) {
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+
+                    // Push bouquet out of rim overlap
+                    const overlap = minDist - dist;
+                    ball.x += nx * overlap;
+                    ball.y += ny * overlap;
+
+                    // Relative velocity along collision normal
+                    const vn = ball.vx * nx + ball.vy * ny;
+                    if (vn < 0) {
+                        const impulse = -(1 + restitution) * vn;
+                        ball.vx += impulse * nx;
+                        ball.vy += impulse * ny;
+
+                        // Add realistic spin from tangential rim friction
+                        const tx = -ny;
+                        const ty = nx;
+                        const vt = ball.vx * tx + ball.vy * ty;
+                        ball.vAngle = vt * 0.025;
+
+                        ball.hitRimOrBoard = true;
+                        sfxRimClank(Math.abs(vn));
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // --- Physics Simulation Step ---
+            function updatePhysics() {
+                const h = game.hoop;
+                const b = game.ball;
+
+                // 0. Smooth Left/Right Court Movement when Ready
+                if (game.moveDir !== 0 && b.state === 'ready') {
+                    setBouquetCourtX(b.homeX + game.moveDir * 5.8);
+                }
+
+                // 1. Real Arcade Moving Hoop Sway
+                if (game.movingHoop && b.state !== 'scored') {
+                    game.hoopPhase += game.hoopSpeed * game.timeScale;
+                    const maxSway = Math.min(95, game.width * 0.24);
+                    h.x = h.baseX + Math.sin(game.hoopPhase) * maxSway;
+                }
+
+                // 2. Net Spring-Mass Physics
+                if (Math.abs(h.netStretch) > 0.05 || Math.abs(h.netVel) > 0.05) {
+                    const force = -0.17 * h.netStretch;
+                    h.netVel = (h.netVel + force) * 0.82;
+                    h.netStretch += h.netVel;
+                    h.netSway *= 0.91;
+                }
+                if (h.glowAlpha > 0) {
+                    h.glowAlpha = Math.max(0, h.glowAlpha - 0.015);
+                }
+
+                // 3. Flying / Rolling Bouquet Physics
+                if (b.state === 'flying' || b.state === 'missed_rolling') {
+                    const dt = game.timeScale;
+                    b.prevX = b.x;
+                    b.prevY = b.y;
+
+                    b.vy += GRAVITY * dt;
+                    b.vx *= Math.pow(AIR_DRAG, dt);
+                    b.x += b.vx * dt;
+                    b.y += b.vy * dt;
+                    b.angle += b.vAngle * dt;
+
+                    if (b.y < b.maxHeightReached) {
+                        b.maxHeightReached = b.y;
+                    }
+
+                    // Sparkle flight trail
+                    if (b.state === 'flying' && Math.random() < 0.75) {
+                        game.trail.push({
+                            x: b.x + (Math.random() - 0.5) * 10,
+                            y: b.y + (Math.random() - 0.5) * 10,
+                            r: 2.5 + Math.random() * 2.5,
+                            alpha: 0.75
+                        });
+                        if (game.trail.length > 18) game.trail.shift();
+                    }
+
+                    // --- Rim & Backboard Collisions (Only while in active play) ---
+                    if (b.state === 'flying') {
+                        const leftRimX = h.x - h.rimHalfWidth;
+                        const rightRimX = h.x + h.rimHalfWidth;
+                        const rimY = h.y;
+
+                        // Backboard Face & Edge Collisions
+                        // In front-facing basketball view, backboard sits behind the hoop,
+                        // acting as a realistic rebound surface when shot high/hard into the target square!
+                        const boardTop = rimY - h.boardHeight + h.boardBottomOffset;
+                        const boardBottom = rimY + h.boardBottomOffset - 6;
+                        const boardLeft = h.x - h.boardWidth / 2;
+                        const boardRight = h.x + h.boardWidth / 2;
+
+                        // Backboard top lip bounce
+                        if (
+                            b.x > boardLeft && b.x < boardRight &&
+                            b.vy > 0 && b.prevY + BOUQUET_RADIUS <= boardTop &&
+                            b.y + BOUQUET_RADIUS >= boardTop
+                        ) {
+                            b.y = boardTop - BOUQUET_RADIUS;
+                            b.vy = -b.vy * 0.58;
+                            b.hitRimOrBoard = true;
+                            sfxBackboardThud(Math.abs(b.vy));
+                        }
+
+                        // Backboard bank rebound (when shot travels high into upper backboard above rim)
+                        if (
+                            b.y > boardTop + 8 && b.y < rimY - 18 &&
+                            Math.abs(b.x - h.x) < h.boardWidth * 0.44 &&
+                            b.vy < -2.5 // rising into backboard
+                        ) {
+                            b.vy = Math.abs(b.vy) * 0.48;
+                            b.vx *= 0.65;
+                            b.hitRimOrBoard = true;
+                            sfxBackboardThud(Math.abs(b.vy));
+                        }
+
+                        // Left & Right Rim Circular Colliders (True Rim Bounce!)
+                        const hitLeft = resolveCircleCollision(b, leftRimX, rimY, RIM_NODE_RADIUS, 0.65);
+                        const hitRight = resolveCircleCollision(b, rightRimX, rimY, RIM_NODE_RADIUS, 0.65);
+
+                        if (hitLeft || hitRight) {
+                            spawnFloatingCallout(b.x, b.y - 24, 'Clank! 💥', '#fb7185');
+                        }
+
+                        // --- SCORE / SWISH DETECTION ---
+                        // Must cross downward through the rim plane strictly between left & right rim edges!
+                        const innerMargin = h.rimHalfWidth - 6;
+                        if (
+                            b.vy > 0 &&
+                            b.prevY <= rimY &&
+                            b.y >= rimY &&
+                            Math.abs(b.x - h.x) < innerMargin
+                        ) {
+                            handleScoreGoal();
+                            return;
+                        }
+                    }
+
+                    // --- Side Court Walls Bounce ---
+                    if (b.x - BOUQUET_RADIUS < 12) {
+                        b.x = 12 + BOUQUET_RADIUS;
+                        b.vx = Math.abs(b.vx) * 0.62;
+                        sfxFloorBounce(Math.abs(b.vx));
+                    } else if (b.x + BOUQUET_RADIUS > game.width - 12) {
+                        b.x = game.width - 12 - BOUQUET_RADIUS;
+                        b.vx = -Math.abs(b.vx) * 0.62;
+                        sfxFloorBounce(Math.abs(b.vx));
+                    }
+
+                    // --- Court Floor Bounce & Miss Feedback ---
+                    if (b.y + BOUQUET_RADIUS >= game.floorY) {
+                        b.y = game.floorY - BOUQUET_RADIUS;
+
+                        if (b.state === 'flying') {
+                            b.state = 'missed_rolling';
+                            b.resetTimer = 58; // ~0.95s before resetting to free-throw spot
+
+                            // Context-aware Banglish/English coaching feedback!
+                            let missMsg = 'Miss hoye gelo! Abar try koro 💪';
+                            if (b.hitRimOrBoard) {
+                                missMsg = 'Rim-e lege fire gelo! So close! 🎯';
+                            } else if (b.maxHeightReached > h.y + 15) {
+                                missMsg = 'Ektu jore maro! Power kom chilo 🌹';
+                            } else if (b.x < h.x - h.rimHalfWidth) {
+                                missMsg = 'Ektu dane aim koro! ➡️';
+                            } else if (b.x > h.x + h.rimHalfWidth) {
+                                missMsg = 'Ektu bame aim koro! ⬅️';
+                            }
+
+                            setFeedback(missMsg, 'text-rose-600');
+                            spawnFloatingCallout(b.x, b.y - 30, 'Miss! Try Again', '#be123c');
+                        }
+
+                        if (Math.abs(b.vy) > 1.8) {
+                            sfxFloorBounce(Math.abs(b.vy));
+                            b.vy = -b.vy * 0.52;
+                            b.vx *= 0.82;
+                            b.vAngle = b.vx * 0.03;
+                        } else {
+                            b.vy = 0;
+                            b.vx *= 0.88;
+                            b.vAngle = b.vx * 0.03;
+                        }
+                    }
+
+                    // Countdown to reset after a missed shot bounces on floor
+                    if (b.state === 'missed_rolling') {
+                        b.resetTimer -= 1;
+                        if (b.resetTimer <= 0) {
+                            resetBallToStart();
+                            setFeedback('Ready for your next shot! 💐', 'text-rose-600');
+                        }
+                    }
+                }
+
+                // 4. Scored Bouquet Falling Smoothly Through Net
+                if (b.state === 'scored') {
+                    const dt = game.timeScale;
+                    b.vy += GRAVITY * 0.55 * dt;
+                    b.vx *= 0.92;
+                    b.x += b.vx * dt;
+                    b.y += b.vy * dt;
+                    b.angle *= 0.92;
+
+                    if (b.y + BOUQUET_RADIUS >= game.floorY) {
+                        b.y = game.floorY - BOUQUET_RADIUS;
+                        b.vy = 0;
+                    }
+                }
+
+                // 5. Update Particles & Floating Callouts
+                for (let i = game.trail.length - 1; i >= 0; i--) {
+                    game.trail[i].alpha -= 0.04;
+                    if (game.trail[i].alpha <= 0) game.trail.splice(i, 1);
+                }
+
+                for (let i = game.particles.length - 1; i >= 0; i--) {
+                    const p = game.particles[i];
+                    p.vy += 0.12;
+                    p.vx *= 0.985;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rot += p.vRot;
+                    p.alpha -= p.decay;
+                    if (p.alpha <= 0) game.particles.splice(i, 1);
+                }
+
+                for (let i = game.floatingTexts.length - 1; i >= 0; i--) {
+                    const ft = game.floatingTexts[i];
+                    ft.y += ft.vy;
+                    ft.life -= 1;
+                    ft.alpha = Math.min(1, ft.life / 25);
+                    if (ft.life <= 0) game.floatingTexts.splice(i, 1);
+                }
+            }
+
+            // --- Goal Scored Celebration ---
+            function handleScoreGoal() {
+                const b = game.ball;
+                const h = game.hoop;
+
+                b.state = 'scored';
+                // Center gently inside net
+                b.vx = (h.x - b.x) * 0.15;
+                b.vy = Math.min(b.vy, 5.5);
+
+                // Dramatic slow-motion impact!
+                game.timeScale = 0.42;
+
+                // Trigger net swish & rim glow
+                h.netVel = 16;
+                h.netSway = b.vx * 2.2;
+                h.glowAlpha = 1.0;
+
+                game.goals += 1;
+                hudGoals.textContent = game.goals;
+
+                const cleanSwish = !b.hitRimOrBoard;
+                setFeedback(cleanSwish ? 'NOTHING BUT NET! SWISH! 💖' : 'IT WENT IN! GOAL! 💖', 'text-emerald-600');
+                spawnFloatingCallout(h.x, h.y - 25, cleanSwish ? 'SWISH! 💍✨' : 'GOAL! 💐❤️', '#059669');
+
+                sfxSwishChime();
+                burstConfetti(h.x, h.y + 16, 75);
+
+                // Reveal Proposal Modal after enjoying the slow-mo swish
+                setTimeout(() => {
+                    game.timeScale = 1.0;
+                    proposalStep1.classList.remove('hidden');
+                    proposalStep2.classList.add('hidden');
+                    proposalModal.classList.add('active');
+                }, 950);
+            }
+
+            function burstConfetti(cx, cy, count = 65) {
+                const palette = ['#f43f5e', '#e11d48', '#ec4899', '#fb7185', '#f59e0b', '#fda4af'];
+                for (let i = 0; i < count; i++) {
+                    const ang = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.35;
+                    const spd = 2.8 + Math.random() * 8.5;
+                    game.particles.push({
+                        x: cx,
+                        y: cy,
+                        vx: Math.cos(ang) * spd,
+                        vy: Math.sin(ang) * spd - 3.2,
+                        size: 6 + Math.random() * 6,
+                        color: palette[Math.floor(Math.random() * palette.length)],
+                        type: i % 3 === 0 ? 'petal' : 'heart',
+                        rot: Math.random() * Math.PI * 2,
+                        vRot: (Math.random() - 0.5) * 0.16,
+                        alpha: 1,
+                        decay: 0.007 + Math.random() * 0.007
+                    });
+                }
+            }
+
+            // --- Rendering Functions ---
+            function roundRect(ctx, x, y, w, h, r) {
+                const radius = Math.min(r, w / 2, h / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.arcTo(x + w, y, x + w, y + h, radius);
+                ctx.arcTo(x + w, y + h, x, y + h, radius);
+                ctx.arcTo(x, y + h, x, y, radius);
+                ctx.arcTo(x, y, x + w, y, radius);
+                ctx.closePath();
+            }
+
+            function drawHeart(x, y, size, color, rotation = 0) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                const s = size * 0.5;
+                ctx.moveTo(0, s * 0.4);
+                ctx.bezierCurveTo(-s, -s * 0.5, -s * 1.4, s * 0.6, 0, s * 1.4);
+                ctx.bezierCurveTo(s * 1.4, s * 0.6, s, -s * 0.5, 0, s * 0.4);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawParticlesAndCallouts() {
+                // Flight sparkle trail
+                game.trail.forEach(t => {
+                    ctx.save();
+                    ctx.fillStyle = `rgba(244, 63, 94, ${t.alpha * 0.6})`;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Heart & Petal Confetti Particles
+                game.particles.forEach(p => {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, p.alpha);
+                    if (p.type === 'heart') {
+                        drawHeart(p.x, p.y, p.size, p.color, p.rot);
+                    } else {
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rot);
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, p.size * 0.65, p.size * 0.35, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+
+                // Floating Arcade Score/Miss Callouts
+                game.floatingTexts.forEach(ft => {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, ft.alpha);
+                    ctx.font = '800 15px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+                    ctx.strokeText(ft.text, ft.x, ft.y);
+                    ctx.fillStyle = ft.color;
+                    ctx.fillText(ft.text, ft.x, ft.y);
+                    ctx.restore();
+                });
+            }
+
+            function drawCourtBackground() {
+                const w = game.width;
+                const h = game.height;
+                const floorY = game.floorY;
+
+                // Soft twilight bokeh glow behind hoop
+                const glowGrad = ctx.createRadialGradient(game.hoop.x, game.hoop.y, 10, game.hoop.x, game.hoop.y, 220);
+                glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+                glowGrad.addColorStop(1, 'rgba(255, 228, 236, 0)');
+                ctx.fillStyle = glowGrad;
+                ctx.fillRect(0, 0, w, floorY);
+
+                // Ambient floating hearts
+                game.ambientHearts.forEach(ah => {
+                    ah.y -= ah.speed;
+                    ah.wobble += 0.015;
+                    if (ah.y < -0.05) ah.y = 1.05;
+                    const px = (ah.x * w) + Math.sin(ah.wobble) * 14;
+                    const py = ah.y * floorY;
+                    drawHeart(px, py, ah.size, `rgba(244, 63, 94, ${ah.alpha})`, 0);
+                });
+
+                // Romantic Rose-Wood Basketball Court Floor
+                const floorGrad = ctx.createLinearGradient(0, floorY, 0, h);
+                floorGrad.addColorStop(0, '#f9a8d4');
+                floorGrad.addColorStop(0.25, '#f472b6');
+                floorGrad.addColorStop(1, '#db2777');
+                ctx.fillStyle = floorGrad;
+                ctx.fillRect(0, floorY, w, h - floorY);
+
+                // Court Baseline & Free-Throw Arc Markings
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(0, floorY + 1);
+                ctx.lineTo(w, floorY + 1);
+                ctx.stroke();
+
+                // Perspective Free-Throw Circle on Court Floor
+                ctx.beginPath();
+                ctx.ellipse(w * 0.5, floorY + 26, Math.min(130, w * 0.34), 16, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Shadow under Bouquet
+                const heightAboveFloor = Math.max(0, floorY - (game.ball.y + BOUQUET_RADIUS));
+                const shadowScale = Math.max(0.25, 1 - heightAboveFloor / 360);
+                ctx.fillStyle = `rgba(136, 19, 55, ${0.26 * shadowScale})`;
+                ctx.beginPath();
+                ctx.ellipse(game.ball.x, floorY + 6, 30 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function drawBackboardAndBackRim() {
+                const h = game.hoop;
+                const boardW = h.boardWidth;
+                const boardH = h.boardHeight;
+                const bx = h.x - boardW / 2;
+                const by = h.y - boardH + h.boardBottomOffset;
+
+                ctx.save();
+
+                // Celebratory Aura around Hoop on Goal
+                if (h.glowAlpha > 0) {
+                    const aura = ctx.createRadialGradient(h.x, h.y, 10, h.x, h.y, 130);
+                    aura.addColorStop(0, `rgba(244, 63, 94, ${0.45 * h.glowAlpha})`);
+                    aura.addColorStop(1, 'rgba(244, 63, 94, 0)');
+                    ctx.fillStyle = aura;
+                    ctx.beginPath();
+                    ctx.arc(h.x, h.y, 130, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Backboard Mounting Pole (Subtle top support)
+                ctx.fillStyle = '#fda4af';
+                ctx.fillRect(h.x - 10, 0, 20, by);
+
+                // Tempered Glass / Rose-Gold Backboard
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+                ctx.strokeStyle = '#fb7185';
+                ctx.lineWidth = 3;
+                roundRect(ctx, bx, by, boardW, boardH, 16);
+                ctx.fill();
+                ctx.stroke();
+
+                // Inner Decorative Trim
+                ctx.strokeStyle = 'rgba(244, 63, 94, 0.22)';
+                ctx.lineWidth = 1.5;
+                roundRect(ctx, bx + 6, by + 6, boardW - 12, boardH - 12, 11);
+                ctx.stroke();
+
+                // Romantic Header inside Backboard
+                ctx.fillStyle = '#e11d48';
+                ctx.font = '700 10px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('MAHAMUDUL HASAN ♥', h.x, by + 22);
+
+                // Shooter's Target Square
+                const sqW = 58;
+                const sqH = 42;
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2.5;
+                roundRect(ctx, h.x - sqW / 2, h.y - sqH - 2, sqW, sqH, 5);
+                ctx.stroke();
+
+                // Back Half of the Rim (drawn behind the bouquet so bouquet passes inside!)
+                ctx.strokeStyle = '#9f1239';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.ellipse(h.x, h.y, h.rimHalfWidth, 8, 0, Math.PI, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawFrontRimAndNet() {
+                const h = game.hoop;
+                const topY = h.y;
+                const stretch = h.netStretch;
+                const sway = h.netSway;
+
+                const topLeft = h.x - h.rimHalfWidth + 3;
+                const topRight = h.x + h.rimHalfWidth - 3;
+                const midY = topY + 28 + stretch * 0.6;
+                const botY = topY + 56 + stretch;
+
+                const midLeft = h.x - h.rimHalfWidth * 0.78 + sway * 0.5;
+                const midRight = h.x + h.rimHalfWidth * 0.78 + sway * 0.5;
+                const botLeft = h.x - h.rimHalfWidth * 0.62 + sway;
+                const botRight = h.x + h.rimHalfWidth * 0.62 + sway;
+
+                ctx.save();
+
+                // Woven White & Blush Basketball Net
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)';
+                ctx.lineWidth = 2.1;
+                ctx.lineCap = 'round';
+
+                const cols = 6;
+                ctx.beginPath();
+                for (let i = 0; i < cols; i++) {
+                    const t0 = i / cols;
+                    const t1 = (i + 1) / cols;
+
+                    const xt0 = topLeft + (topRight - topLeft) * t0;
+                    const xt1 = topLeft + (topRight - topLeft) * t1;
+                    const xm0 = midLeft + (midRight - midLeft) * t0;
+                    const xm1 = midLeft + (midRight - midLeft) * t1;
+                    const xb0 = botLeft + (botRight - botLeft) * t0;
+                    const xb1 = botLeft + (botRight - botLeft) * t1;
+
+                    // Upper diamond weave
+                    ctx.moveTo(xt0, topY + 2);
+                    ctx.lineTo(xm1, midY);
+                    ctx.moveTo(xt1, topY + 2);
+                    ctx.lineTo(xm0, midY);
+
+                    // Lower diamond weave
+                    ctx.moveTo(xm0, midY);
+                    ctx.lineTo(xb1, botY);
+                    ctx.moveTo(xm1, midY);
+                    ctx.lineTo(xb0, botY);
+                }
+                ctx.stroke();
+
+                // Front Half of Rim (drawn in front of bouquet when bouquet drops through!)
+                const rimGrad = ctx.createLinearGradient(h.x - h.rimHalfWidth, h.y, h.x + h.rimHalfWidth, h.y);
+                rimGrad.addColorStop(0, '#fb7185');
+                rimGrad.addColorStop(0.5, '#e11d48');
+                rimGrad.addColorStop(1, '#fb7185');
+
+                ctx.strokeStyle = rimGrad;
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.ellipse(h.x, h.y, h.rimHalfWidth, 8, 0, 0, Math.PI);
+                ctx.stroke();
+
+                // Rim Bracket Connector
+                ctx.fillStyle = '#e11d48';
+                roundRect(ctx, h.x - 8, h.y - 6, 16, 7, 3);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            function drawAimingTrajectory() {
+                if (!game.aim.active || game.ball.state !== 'aiming') return;
+                const vx = game.aim.launchVx;
+                const vy = game.aim.launchVy;
+                if (vy > -5) return;
+
+                ctx.save();
+
+                // Draw Slingshot Elastic Tension Line
+                ctx.strokeStyle = 'rgba(225, 29, 72, 0.32)';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(game.ball.homeX, game.ball.homeY);
+                ctx.lineTo(game.ball.x, game.ball.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw Parabolic Aiming Dots (First ~35% of arc so skill & power control remain fun!)
+                let simX = game.ball.x;
+                let simY = game.ball.y;
+                let simVx = vx;
+                let simVy = vy;
+
+                const steps = 16;
+                for (let i = 1; i <= steps; i++) {
+                    simVy += GRAVITY;
+                    simVx *= AIR_DRAG;
+                    simX += simVx;
+                    simY += simVy;
+
+                    const progress = i / steps;
+                    const alpha = (1 - progress) * 0.85;
+                    const radius = (1 - progress * 0.45) * 4.2;
+
+                    ctx.fillStyle = `rgba(225, 29, 72, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(simX, simY, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Power Gauge Pill near Bouquet
+                const pct = Math.round(game.aim.powerRatio * 100);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                roundRect(ctx, game.ball.x - 28, game.ball.y + 38, 56, 20, 10);
+                ctx.fill();
+
+                ctx.fillStyle = pct > 85 ? '#e11d48' : '#db2777';
+                ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${pct}% PWR`, game.ball.x, game.ball.y + 51);
+
+                ctx.restore();
+            }
+
+            function drawFlowerBouquet() {
+                const b = game.ball;
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                ctx.rotate(b.angle);
+
+                // Subtle idle pulse ring when waiting for shot
+                if (b.state === 'ready') {
+                    const pulse = 1 + Math.sin(performance.now() * 0.005) * 0.08;
+                    ctx.strokeStyle = 'rgba(244, 63, 94, 0.28)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 34 * pulse, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Back Kraft/Blush Wrapping Cone
+                ctx.fillStyle = '#ffe4e6';
+                ctx.strokeStyle = '#fda4af';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-22, -4);
+                ctx.lineTo(22, -4);
+                ctx.lineTo(0, 32);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Lush Emerald Greenery Leaves
+                const leaves = [
+                    { x: -16, y: -8, rot: -0.6 },
+                    { x: 16, y: -8, rot: 0.6 },
+                    { x: -9, y: -17, rot: -1.1 },
+                    { x: 9, y: -17, rot: 1.1 },
+                    { x: 0, y: -20, rot: 0 }
+                ];
+                ctx.fillStyle = '#10b981';
+                leaves.forEach(lf => {
+                    ctx.save();
+                    ctx.translate(lf.x, lf.y);
+                    ctx.rotate(lf.rot);
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 7, 3.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+
+                // Delicate White Baby's Breath Sprigs
+                ctx.fillStyle = '#ffffff';
+                const specks = [
+                    [-19, -13], [-14, -18], [19, -13], [14, -18], [-5, -22], [5, -22]
+                ];
+                specks.forEach(([sx, sy]) => {
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 2.2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+
+                // Roses & Peonies Cluster
+                const roses = [
+                    { x: -10, y: -13, r: 7.5, c1: '#f472b6', c2: '#be185d' },
+                    { x: 10, y: -13, r: 7.5, c1: '#f472b6', c2: '#be185d' },
+                    { x: 0, y: -16, r: 8.5, c1: '#fb7185', c2: '#be123c' },
+                    { x: -13, y: -5, r: 7, c1: '#fda4af', c2: '#e11d48' },
+                    { x: 13, y: -5, r: 7, c1: '#fda4af', c2: '#e11d48' },
+                    { x: 0, y: -6, r: 9.2, c1: '#f43f5e', c2: '#9f1239' }
+                ];
+
+                roses.forEach(rs => {
+                    const grad = ctx.createRadialGradient(rs.x - 2, rs.y - 2, 1, rs.x, rs.y, rs.r);
+                    grad.addColorStop(0, rs.c1);
+                    grad.addColorStop(1, rs.c2);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(rs.x, rs.y, rs.r, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Rose petal swirl highlight
+                    ctx.strokeStyle = 'rgba(255, 228, 230, 0.65)';
+                    ctx.lineWidth = 1.1;
+                    ctx.beginPath();
+                    ctx.arc(rs.x, rs.y, rs.r * 0.48, 0.2, Math.PI * 1.45);
+                    ctx.stroke();
+                });
+
+                // Front Folded Wrapping Paper
+                const wrapGrad = ctx.createLinearGradient(-20, -2, 20, 30);
+                wrapGrad.addColorStop(0, '#fecdd3');
+                wrapGrad.addColorStop(1, '#fda4af');
+                ctx.fillStyle = wrapGrad;
+                ctx.beginPath();
+                ctx.moveTo(-21, -2);
+                ctx.lineTo(0, 8);
+                ctx.lineTo(21, -2);
+                ctx.lineTo(0, 33);
+                ctx.closePath();
+                ctx.fill();
+
+                // Crimson Silk Ribbon & Bow
+                ctx.strokeStyle = '#e11d48';
+                ctx.lineWidth = 3.2;
+                ctx.beginPath();
+                ctx.moveTo(-8, 17);
+                ctx.quadraticCurveTo(0, 20, 8, 17);
+                ctx.stroke();
+
+                // Bow Loops
+                ctx.fillStyle = '#e11d48';
+                ctx.beginPath();
+                ctx.ellipse(-4.5, 17, 4.5, 2.5, -0.35, 0, Math.PI * 2);
+                ctx.ellipse(4.5, 17, 4.5, 2.5, 0.35, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bouquet Gift Tag ("Mahamudul Hasan")
+                ctx.save();
+                ctx.translate(14, 21);
+                ctx.rotate(0.22);
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#fda4af';
+                ctx.lineWidth = 1;
+                roundRect(ctx, -2, -6, 56, 12, 4);
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = '#be123c';
+                ctx.font = '700 5.5px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Mahamudul Hasan', 26, 2);
+                ctx.restore();
+
+                ctx.restore();
+            }
+
+            // --- Main 60fps Game Loop ---
+            function renderLoop() {
+                ctx.clearRect(0, 0, game.width, game.height);
+
+                updatePhysics();
+
+                drawCourtBackground();
+                drawBackboardAndBackRim();
+                drawAimingTrajectory();
+                drawFlowerBouquet();
+                drawFrontRimAndNet();
+                drawParticlesAndCallouts();
+
+                requestAnimationFrame(renderLoop);
+            }
+
+            // --- Modal & Pro Mode Controls ---
+            function handleYesClicked() {
+                sfxFanfare();
+                proposalStep1.classList.add('hidden');
+                proposalStep2.classList.remove('hidden');
+
+                burstConfetti(game.width * 0.5, game.height * 0.35, 90);
+                setTimeout(() => burstConfetti(game.width * 0.25, game.height * 0.45, 50), 220);
+                setTimeout(() => burstConfetti(game.width * 0.75, game.height * 0.45, 50), 440);
+            }
+
+            yesBtnPrimary.addEventListener('click', handleYesClicked);
+            yesBtnSecondary.addEventListener('click', handleYesClicked);
+
+            playAgainBtn.addEventListener('click', () => {
+                proposalModal.classList.remove('active');
+                game.movingHoop = true;
+                game.hoopSpeed = Math.min(0.042, game.hoopSpeed + 0.008);
+                challengeBar.classList.remove('hidden');
+                swayToggleBtn.innerHTML = '<span>🔥 Pro Mode: Fast Moving Hoop ON</span>';
+                resetBallToStart();
+                setFeedback('Move left/right & time the moving hoop! 🔥🏀', 'text-rose-600');
+            });
+
+            swayToggleBtn.addEventListener('click', () => {
+                game.movingHoop = !game.movingHoop;
+                if (!game.movingHoop) {
+                    game.hoop.x = game.hoop.baseX;
+                    swayToggleBtn.innerHTML = '<span>🎯 Classic Mode: Static Hoop</span>';
+                } else {
+                    swayToggleBtn.innerHTML = '<span>🔥 Arcade Mode: Moving Hoop ON</span>';
+                }
+            });
+
+            // --- Boot ---
+            window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('load', () => {
+                resizeCanvas();
+                challengeBar.classList.remove('hidden');
+                swayToggleBtn.innerHTML = '<span>🏀 Arcade Mode: Moving Hoop ON</span>';
+                setFeedback('Move Left/Right & shoot into the moving hoop! 💐', 'text-rose-600');
+                requestAnimationFrame(renderLoop);
+            });
+            resizeCanvas();
+        })();
+    </script>
+</body>
+</html>
